@@ -1,31 +1,33 @@
-const {user} = require("../models/users");
-const{v4: uuidv4} = require("uuid");
-const {setUser } = require('../service/auth')
+const { v4: uuidv4 } = require("uuid");
+const User = require("../models/user");
+const { setUser } = require("../service/auth");
 
-
-async function handleUserSignUp(req,res){
-    const body = req.body;
-    await user.create({
-        name: body.name,
-        email: body.email,
-        password: body.password,
-    });
-    return res.render("home");
+async function handleUserSignup(req, res) {
+  const { name, email, password } = req.body;
+  await User.create({
+    name,
+    email,
+    password,
+  });
+  return res.redirect("/");
 }
 
-async function handleUserLogin(req,res) {
-    const body = req.body;
-    const User = await user.findOne({email: body.email , password:body.password});
-    if(!User) return res.render('login',{
-        error: "invalid username or Password",
+async function handleUserLogin(req, res) {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email, password });
+
+  if (!user)
+    return res.render("login", {
+      error: "Invalid Username or Password",
     });
-    const sessionId = uuidv4();
-    setUser(sessionId,User);
-    res.cookie("uid", sessionId);
-    return res.redirect("/");
+
+  const sessionId = uuidv4();
+  setUser(sessionId, user);
+  res.cookie("uid", sessionId);
+  return res.redirect("/");
 }
 
-
-
-module.exports= {handleUserSignUp,handleUserLogin
-    };
+module.exports = {
+  handleUserSignup,
+  handleUserLogin,
+};
